@@ -54,9 +54,7 @@ def lambda_handler(event: dict, context):
     dates = defaultdict(list)
     items = response["Items"]
     for item in items:
-        timestamp = dt.datetime.fromtimestamp(
-            int(item["ProcessEpoch"]) / 1000, dt.timezone.utc
-        )
+        timestamp = dt.datetime.fromtimestamp(int(item["ProcessEpoch"]) / 1000)
         dates[timestamp.strftime("%Y-%m-%d")].append(item)
     payload = [value[0] for value in dates.values() if value]
 
