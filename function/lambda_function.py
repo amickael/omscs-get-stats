@@ -54,15 +54,17 @@ def lambda_handler(event: dict, context):
     dates = defaultdict(list)
     items = response["Items"]
     for item in items:
-        timestamp = dt.datetime.fromtimestamp(int(item["ProcessEpoch"]) / 1000)
+        timestamp = dt.datetime.fromtimestamp(
+            int(item["ProcessEpoch"]) / 1000, dt.timezone.utc
+        )
         dates[timestamp.strftime("%Y-%m-%d")].append(item)
-    payload = []
-    for value in dates.values():
-        if value:
-            payload.append(value[0])
+    payload = [value[0] for value in dates.values() if value]
 
     return {
         "statusCode": 200,
         "body": json.dumps(payload, cls=BetterJSONEncoder),
         "contentType": "application/json",
     }
+
+
+print(lambda_handler(None, None))
