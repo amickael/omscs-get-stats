@@ -63,6 +63,6 @@ def lambda_handler(event: dict, context):
 
     return {
         "statusCode": 200,
-        "body": json.dumps(items, cls=BetterJSONEncoder),
+        "body": json.dumps(payload, cls=BetterJSONEncoder),
         "contentType": "application/json",
     }
