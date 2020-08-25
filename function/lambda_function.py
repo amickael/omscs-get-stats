@@ -1,5 +1,7 @@
 import os
 import time
+import datetime as dt
+from collections import defaultdict
 from decimal import Decimal
 from typing import Any
 import json
@@ -24,7 +26,7 @@ MATRICULATION = os.getenv("MATRICULATION")
 
 
 ########################################################################################################################
-# Configuration
+# Utils
 ########################################################################################################################
 class BetterJSONEncoder(json.JSONEncoder):
     def default(self, o: Any) -> Any:
@@ -38,6 +40,7 @@ class BetterJSONEncoder(json.JSONEncoder):
 # Application
 ########################################################################################################################
 def lambda_handler(event: dict, context):
+    # Pull data from DynamoDB
     dynamodb = boto3.resource("dynamodb")
     table = dynamodb.Table(DYNAMODB_TABLE)
     response = table.query(
@@ -46,7 +49,18 @@ def lambda_handler(event: dict, context):
         KeyConditionExpression=Key(DYNAMODB_KEY).eq(MATRICULATION)
         & Key(DYNAMODB_SORT).gte(int(int(time.time() * 1000) - 4.32e8)),
     )
+
+    # Parse items to get the latest info for each day
+    dates = defaultdict(list)
     items = response["Items"]
+    for item in items:
+        timestamp = dt.datetime.fromtimestamp(int(item["ProcessEpoch"]) / 1000)
+        dates[timestamp.strftime("%Y-%m-%d")].append(item)
+    payload = []
+    for value in dates.values():
+        if value:
+            payload.append(value[0])
+
     return {
         "statusCode": 200,
         "body": json.dumps(items, cls=BetterJSONEncoder),
