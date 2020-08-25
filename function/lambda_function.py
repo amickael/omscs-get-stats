@@ -18,6 +18,9 @@ except ImportError:
 # Configuration
 ########################################################################################################################
 DYNAMODB_TABLE = os.getenv("DYNAMODB_TABLE")
+DYNAMODB_KEY = os.getenv("DYNAMODB_KEY")
+DYNAMODB_SORT = os.getenv("DYNAMODB_SORT")
+MATRICULATION = os.getenv("MATRICULATION")
 
 
 ########################################################################################################################
@@ -40,10 +43,8 @@ def lambda_handler(event: dict, context):
     response = table.query(
         Select="ALL_ATTRIBUTES",
         ScanIndexForward=False,
-        KeyConditionExpression=Key(os.getenv("DYNAMODB_KEY")).eq(
-            os.getenv("MATRICULATION")
-        )
-        & Key(os.getenv("DYNAMODB_SORT")).gte(int(int(time.time() * 1000) - 4.32e8)),
+        KeyConditionExpression=Key(DYNAMODB_KEY).eq(MATRICULATION)
+        & Key(DYNAMODB_SORT).gte(int(int(time.time() * 1000) - 4.32e8)),
     )
     items = response["Items"]
     return {
